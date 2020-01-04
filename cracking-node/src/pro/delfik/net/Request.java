@@ -62,18 +62,11 @@ public class Request {
 		}
 	}
 
-	public Response execute(Proxy proxy) {
+	public Response execute(Proxy proxy) throws Exception {
 		HttpURLConnection con = prepare(proxy);
 
-		int code;
-		String message;
-		try {
-			code = con.getResponseCode();
-			message = con.getResponseMessage();
-		} catch (IOException ex) {
-			System.out.println("sad :c");
-			return new Response(503, "Service unavailable", new HashMap<>(), new HashMap<>(), new byte[0]);
-		}
+		int code = con.getResponseCode();
+		String message = con.getResponseMessage();
 		Map<String, String> headers = new HashMap<>();
 		Map<String, String> cookies = new HashMap<>();
 		for (Map.Entry<String, List<String>> e : con.getHeaderFields().entrySet()) {
@@ -91,13 +84,8 @@ public class Request {
 
 			headers.put(name, values.get(0));
 		}
-		byte[] body = new byte[0];
-		if (code != 503) try {
-			InputStream inputStream = con.getInputStream();
-			body = NetUtil.readInputStreamFluix(inputStream);
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
-		}
+		InputStream inputStream = con.getInputStream();
+		byte[] body = NetUtil.readInputStreamFluix(inputStream);
 		return new Response(code, message, headers, cookies, body);
 	}
 
@@ -161,6 +149,14 @@ public class Request {
 	public Request param(String name, String value) {
 		parameters.put(name, value);
 		return this;
+	}
+
+	public Response executeSafe(Proxy proxy) {
+		try {
+			return execute(proxy);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }

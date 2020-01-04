@@ -17,7 +17,7 @@ public class Messages extends VkModule {
 		Response response = request("send")
 				.param("peer_id", String.valueOf(peer))
 				.param("random_id", String.valueOf(random.nextLong()))
-				.body("message", message).execute(Proxy.NO_PROXY);
+				.body("message", message).executeSafe(Proxy.NO_PROXY);
 //		System.out.println(response);
 //		System.out.println(new String(response.getBody()));
 	}

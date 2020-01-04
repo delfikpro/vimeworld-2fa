@@ -33,7 +33,7 @@ public abstract class VkModule {
 	}
 
 	protected JSONObject execute(Request request, boolean responseSubobject) {
-		Response response = request.execute(Proxy.NO_PROXY);
+		Response response = request.executeSafe(Proxy.NO_PROXY);
 		byte[] body = response.getBody();
 
 		// Создавать строки очень медленно, поэтому будем читать массив байт

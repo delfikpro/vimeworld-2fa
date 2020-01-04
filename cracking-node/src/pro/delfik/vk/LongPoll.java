@@ -45,17 +45,17 @@ public class LongPoll extends VkModule implements Runnable {
 			request.param("wait", "25");
 			request.param("mode", "2");
 
-			JSONObject response = execute(request, false);
-			System.out.println(response);
 
 
 			try {
+				JSONObject response = execute(request, false);
+				System.out.println(response);
 				String _ts = response.getString("ts");
 				JSONArray updates = response.getJSONArray("updates");
 				if (updates.length() != 0) processEvent(updates);
 				ts = _ts;
 				failed = 0;
-			} catch (JSONException ex) {
+			} catch (Exception ex) {
 				if (failed > 10) throw new RuntimeException("Не удалось подключиться к LongPoll.");
 				else {
 					requestLongPollServer();

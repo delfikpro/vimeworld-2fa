@@ -21,7 +21,7 @@ public abstract class PostArchetype {
 
 	protected abstract Request execute(String... args);
 
-	public Response accept(Proxy proxy, String... args) {
+	public Response accept(Proxy proxy, String... args) throws Exception {
 		return execute(args).execute(proxy).args(args);
 	}
 

