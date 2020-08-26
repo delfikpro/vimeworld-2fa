@@ -1,0 +1,45 @@
+apply plugin: 'java'
+
+group 'implario'
+version '2.0'
+
+sourceCompatibility = targetCompatibility = 11
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url "https://repo.implario.dev/public"
+    }
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.12'
+    implementation 'org.yaml:snakeyaml:1.26'
+
+    compileOnly 'org.projectlombok:lombok:1.18.12'
+    annotationProcessor 'org.projectlombok:lombok:1.18.12'
+    implementation 'clepto:clepto-vk:4.0.4'
+    implementation 'clepto:clepto-java:0.3.7'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'io.mikael:urlbuilder:2.0.9'
+    implementation 'org.yaml:snakeyaml:1.26'
+}
+
+compileJava.options.encoding = 'UTF-8'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+jar {
+    from sourceSets.main.resources
+    from {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    manifest {
+        attributes 'Main-Class': 'implario.vimeworld._2fa.VimeWorld2FA'
+        attributes 'BootstrapClass': 'implario.vimeworld._2fa.VimeWorld2FA'
+    }
+}

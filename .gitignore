@@ -1,0 +1,7 @@
+build
+.gradle
+.idea
+sessions.txt
+accounts.txt
+env
+config.yml

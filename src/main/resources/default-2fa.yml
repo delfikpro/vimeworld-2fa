@@ -1,0 +1,16 @@
+anticaptcha-token: ???
+vimeworld-captcha-secret: 6LeriWUUAAAAAJMt8OpbkWrWxVePsE_TRUVEX2sp
+user-agent: |
+  Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36
+
+proxy:
+  type: ???
+  host: ???
+  port: ???
+
+vk-token: ???
+vk-bot-id: ???
+vk-main-peer: ???
+
+ranks:
+  - {name: DelfikPro, rank: ADMIN, vkId: 250998883}
