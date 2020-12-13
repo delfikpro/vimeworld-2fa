@@ -350,7 +350,7 @@ public class App {
 					if ((args[1].equals("*") || args[1].startsWith("id") && args[1].substring(2).equals(String.valueOf(account.getOwnerVkId())))
 							&& account.getPhase() instanceof WaitingPhase) {
 						((WaitingPhase) account.getPhase()).setApproved(true);
-						this.vkSession.sendMessage(new OutcomingMessage("Выдано подверждение для аккаунта " + account), peerId);
+						this.vkSession.sendMessage(new OutcomingMessage("Выдано подтверждение для аккаунта " + account), peerId);
 					}
 				}
 				return;
