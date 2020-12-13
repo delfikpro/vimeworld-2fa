@@ -1,16 +1,10 @@
-anticaptcha-token: ???
-vimeworld-captcha-secret: 6LeriWUUAAAAAJMt8OpbkWrWxVePsE_TRUVEX2sp
-user-agent: |
-  Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36
+anticaptcha-token: 'https://anti-captcha.ru/'
+vimeworld-captcha-secret: 6LeriWUUAAAAAJMt8OpbkWrWxVePsE_TRUVEX2sp #Этот тоже не трогаем
+user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36 #Этот параметр не трогать
 
-proxy:
-  type: ???
-  host: ???
-  port: ???
-
-vk-token: ???
-vk-bot-id: ???
-vk-main-peer: ???
+vk-token: 'Здесь вводим токен бота'
+vk-bot-id: 'ID группы, которая будет являться ботом'
+vk-main-peer: 'ID вашей страницы ВК'
 
 ranks:
-  - {name: DelfikPro, rank: ADMIN, vkId: 250998883}
+  - {name: 'Ваш ник на VW', rank: ADMIN, vkId: 'ID вашей страницы ВК'}
