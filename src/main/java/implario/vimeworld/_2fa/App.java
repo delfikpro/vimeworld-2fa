@@ -1,13 +1,17 @@
 package implario.vimeworld._2fa;
 
-import clepto.LoggerUtils;
-import clepto.humanize.Humanize;
-import clepto.humanize.TimeFormatter;
-import clepto.vk.proxy.model.Message;
-import clepto.vk.reverse.GroupSession;
-import clepto.vk.reverse.LongPoll;
-import clepto.vk.reverse.VkClient;
-import clepto.vk.reverse.message.OutcomingMessage;
+import implario.LoggerUtils;
+import implario.humanize.Humanize;
+import implario.humanize.TimeFormatter;
+import implario.vk.event.events.messages.NewMessageEvent;
+import implario.vk.event.longpoll.LongPollEventListener;
+import implario.vk.event.longpoll.*;
+import implario.vk.*;
+import implario.vk.model.message.Message;
+import implario.vk.GroupSession;
+import implario.vk.event.longpoll.LongPollData;
+import implario.vk.VkClient;
+import implario.vk.model.message.OutcomingMessage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -36,7 +40,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.FileHandler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -82,7 +85,7 @@ public class App {
 		HttpClient httpClient = HttpClient.newHttpClient();
 		VkClient vkClient = new VkClient(httpClient);
 		GroupSession session = vkClient.newGroupSession(vkBotId, vkToken);
-		LongPoll longPoll = session.createLongPoll(_vkLogger);
+		LongPollEventListener longPoll = session.createLongPoll(_vkLogger);
 
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -127,7 +130,7 @@ public class App {
 	private final Set<Account> accounts = Collections.newSetFromMap(new ConcurrentHashMap<>());
 	private Set<Account> toRemove = Collections.newSetFromMap(new ConcurrentHashMap<>());
 	private final GroupSession vkSession;
-	private final LongPoll longPoll;
+	private final LongPollEventListener longPoll;
 	private final Logger mainLogger;
 	private final Logger vkLogger;
 	private final Map<Integer, User> userMap = new HashMap<>();
@@ -135,7 +138,7 @@ public class App {
 
 	public void start() {
 		instance = this;
-		longPoll.registerHandler(LongPoll.LongPollUpdate.MessageNew.class, this::handleVkMessage);
+		longPoll.registerHandler(NewMessageEvent.class, this::handleVkMessage);
 		longPoll.start();
 		for (Account account : accounts) {
 			account.setPhase(account.getPhpsessid() == null ?
@@ -180,7 +183,7 @@ public class App {
 
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm, dd MMM yyyy");
 
-	private void handleVkMessage(LongPoll.LongPollUpdate.MessageNew event) {
+	private void handleVkMessage(NewMessageEvent event) {
 		try {
 
 			Message message = event.getMessage();
@@ -367,8 +370,8 @@ public class App {
 
 	public User getUser(int vkId) {
 		if (this.userMap.containsKey(vkId)) return this.userMap.get(vkId);
-		clepto.vk.proxy.model.User[] result = this.vkSession.getUser(vkId).join();
-		clepto.vk.proxy.model.User vkUser = result[0];
+		implario.vk.model.User[] result = this.vkSession.getUser(vkId).join();
+		implario.vk.model.User vkUser = result[0];
 		User user = new User(vkId, vkUser.getFirstName() + " " + vkUser.getLastName(), User.Rank.SAILOR);
 		this.userMap.put(vkId, user);
 		this.saveAccounts();

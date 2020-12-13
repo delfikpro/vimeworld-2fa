@@ -1,6 +1,6 @@
 package implario.vimeworld._2fa.phase;
 
-import clepto.vk.reverse.message.OutcomingMessage;
+import implario.vk.model.message.OutcomingMessage;
 import com.google.gson.JsonObject;
 import implario.vimeworld._2fa.Account;
 import implario.vimeworld._2fa.App;

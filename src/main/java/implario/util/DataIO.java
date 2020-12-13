@@ -8,10 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * the great legacy.
- * @author 6oogle
- */
 public class DataIO {
 
 	public static List<String> read(String path) {

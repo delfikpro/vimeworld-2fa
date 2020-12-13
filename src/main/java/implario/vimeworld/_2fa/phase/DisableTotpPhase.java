@@ -1,6 +1,6 @@
 package implario.vimeworld._2fa.phase;
 
-import clepto.vk.proxy.QueryContext;
+import implario.vk.query.QueryContext;
 import implario.vimeworld._2fa.Account;
 import implario.vimeworld._2fa.App;
 import implario.vimeworld._2fa.VimeWorld2FA;

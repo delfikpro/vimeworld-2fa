@@ -1,7 +1,7 @@
 package implario.vimeworld._2fa;
 
-import clepto.vk.reverse.GroupSession;
-import clepto.vk.reverse.message.OutcomingMessage;
+import implario.vk.GroupSession;
+import implario.vk.model.message.OutcomingMessage;
 import implario.vimeworld._2fa.phase.Phase;
 import lombok.Data;
 

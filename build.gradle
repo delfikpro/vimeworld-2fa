@@ -19,11 +19,12 @@ dependencies {
 
     compileOnly 'org.projectlombok:lombok:1.18.12'
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
-    implementation 'clepto:clepto-vk:4.0.4'
-    implementation 'clepto:clepto-java:0.3.7'
+    implementation 'implario:java-tools:1.0.2'
+    implementation 'implario:vk-tools:5.1.2'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'io.mikael:urlbuilder:2.0.9'
     implementation 'org.yaml:snakeyaml:1.26'
+    implementation 'implario:humanize:1.0.2'
 }
 
 compileJava.options.encoding = 'UTF-8'
