@@ -14,37 +14,35 @@ import java.util.regex.Pattern;
 
 public class CaptchaSolvingPhase extends Phase {
 
-	public final URI methodUri = UrlBuilder.fromString("https://api.anti-captcha.com/getTaskResult").toUri();
+	public final URI methodUri;
 	public final URI vimeControlPanelUri = UrlBuilder.fromString("https://cp.vimeworld.ru/").toUri();
 	public final Pattern cookiePhpsessidPattern = Pattern.compile("PHPSESSID=([A-Za-z0-9_-]+)");
-	private final HttpRequest.BodyPublisher requestBody;
 
-	public CaptchaSolvingPhase(App app, Account account, int antiCaptchaTaskId) {
+	public CaptchaSolvingPhase(App app, Account account, String antiCaptchaTaskId) {
 		super("captcha-bypass", app, account);
-		JsonObject json = new JsonObject();
-		json.addProperty("clientKey", app.getAntiCaptchaToken());
-		json.addProperty("taskId", antiCaptchaTaskId);
-		this.requestBody = HttpRequest.BodyPublishers.ofString(app.getGson().toJson(json));
+
+		this.methodUri = UrlBuilder.fromString("https://rucaptcha.com/res.php?key=" + app.getAntiCaptchaToken() + "&json=1&id=" + antiCaptchaTaskId + "&action=get").toUri();
 	}
 
 	@Override
 	public void tick0() throws Exception {
 		this.nextTickAfter(10000);
-		HttpRequest request = HttpRequest.newBuilder(methodUri).POST(this.requestBody).build();
+		HttpRequest request = HttpRequest.newBuilder(methodUri).GET().build();
 		HttpResponse<String> response = app.getHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 		String body = response.body();
 		app.getMainLogger().info(account + " captcha: " + body);
 		JsonObject taskInfo = app.getGson().fromJson(body, JsonObject.class);
-		if (taskInfo.has("errorId") && taskInfo.get("errorId").getAsInt() != 0) {
-			app.getVkSession().sendMessage(new OutcomingMessage("Хаха гугловская капча упала"), app.getVkMainPeer());
-			WaitingPhase phase = new WaitingPhase(this.app, this.account);
+
+		if (taskInfo.get("request").getAsString().equals("CAPCHA_NOT_READY")) return;
+		if (taskInfo.get("status").getAsInt() == 0 && !taskInfo.get("request").getAsString().equals("CAPCHA_NOT_READY")) {
+			app.getVkSession().sendMessage(new OutcomingMessage("Хаха я словил ошибку " + taskInfo.get("request").getAsString() + " от Rucaptcha"), app.getVkMainPeer());
+			FinishedPhase phase = new FinishedPhase(this.app, this.account, false);
 			account.setPhase(phase);
-			phase.setApproved(true);
 			phase.tick();
 			return;
 		}
-		if (!taskInfo.get("status").getAsString().equals("ready")) return;
-		String gRecaptchaResponse = taskInfo.get("solution").getAsJsonObject().get("gRecaptchaResponse").getAsString();
+
+		String gRecaptchaResponse = taskInfo.get("request").getAsString();
 
 		HttpResponse<String> vimeResponse = this.app.syncRequest(HttpRequest.newBuilder(vimeControlPanelUri));
 		this.app.getMainLogger().info(vimeResponse.statusCode() + " " + vimeResponse);

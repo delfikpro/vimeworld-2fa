@@ -1,10 +1,10 @@
-anticaptcha-token: 'https://anti-captcha.ru/'
-vimeworld-captcha-secret: 6LeriWUUAAAAAJMt8OpbkWrWxVePsE_TRUVEX2sp #Этот тоже не трогаем
-user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36 #Этот параметр не трогать
+anticaptcha-token: 'Токен работника на https://rucaptcha.com/'
+vimeworld-captcha-secret: 6LeriWUUAAAAAJMt8OpbkWrWxVePsE_TRUVEX2sp # Не изменяйте данный параметр.
+user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36 # Не изменяйте данный параметр.
 
-vk-token: 'Здесь вводим токен бота'
-vk-bot-id: 'ID группы, которая будет являться ботом'
-vk-main-peer: 'ID вашей страницы ВК'
+vk-token: 'Токен бота ВК'
+vk-bot-id: ID группы ВК, которая будет являться ботом
+vk-main-peer: ID вашей страницы ВК
 
 ranks:
-  - {name: 'Ваш ник на VW', rank: ADMIN, vkId: 'ID вашей страницы ВК'}
+  - {name: 'Ваш ник на VW', rank: ADMIN, vkId: ID вашей страницы ВК}

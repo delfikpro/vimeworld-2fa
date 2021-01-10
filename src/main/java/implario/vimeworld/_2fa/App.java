@@ -58,9 +58,16 @@ public class App {
 		Yaml yaml = new Yaml();
 		File configFile = new File("2fa.yml");
 		Path configPath = configFile.toPath();
+
+		File accs = new File("2fa-accounts.json");
+
+		File perms = new File("2fa-permissions.json");
+
 		if (!configFile.exists()) {
 			DataIO.exportResource("/default-2fa.yml", configFile);
-			_mainLogger.info("Created 2fa.yml, go and configurate it!");
+			DataIO.exportResource("/2fa-accounts.json", accs);
+			DataIO.exportResource("/2fa-permissions.json", perms);
+			_mainLogger.info("Created 2fa.yml, go and configure it! Don't touch 2fa-accounts.json and 2fa-permissions.json!");
 			return null;
 		}
 		_mainLogger.info("Reading config...");
