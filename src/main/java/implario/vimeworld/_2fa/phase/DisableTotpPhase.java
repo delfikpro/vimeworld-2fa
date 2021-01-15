@@ -20,7 +20,7 @@ public class DisableTotpPhase extends Phase {
 	private String currentCode;
 
 	public DisableTotpPhase(App app, Account account, String csrfToken, String currentCode) {
-		super("disable-2fa", app, account);
+		super("disabling two-factor protection", app, account);
 		this.csrfToken = csrfToken;
 		this.currentCode = currentCode;
 	}
@@ -52,7 +52,7 @@ public class DisableTotpPhase extends Phase {
 		if (!result.getState().equals("success")) return;
 
 		this.account.setPhase(new FinishedPhase(this.app, this.account, true));
-		this.app.getMainLogger().info("UNLOCKED " + account);
+		this.app.getMainLogger().info("Аккаунт " + account + " был успешно восстановлен от двухфакторной защиты");
 
 	}
 

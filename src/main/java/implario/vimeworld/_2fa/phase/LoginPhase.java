@@ -56,13 +56,13 @@ public class LoginPhase extends Phase {
 		if (location.equals("/login")) {
 			this.account.setPhase(new RepairPhase(this.app, this.account));
 			this.app.getVkSession().sendMessage(new OutcomingMessage("На лодочке " + account + " порвался парус, и она не смогла стартовать. " +
-					"Требуется вмешательстов лоцмана/капитана"), this.account.getOwnerVkId());
-			this.app.getMainLogger().severe("Account " + account + " has incorrect password!");
+					"Требуется вмешательство лоцмана/капитана"), this.account.getOwnerVkId());
+			this.app.getMainLogger().severe("На аккаунте " + account + " был введен некорректный пароль!");
 
 			return;
 		}
 		if (location.equals("index")) {
-			this.app.getMainLogger().severe("Account " + account + " doesn't have 2fa!");
+			this.app.getMainLogger().severe("Аккаунт " + account + " не имеет двухфакторной защиты!");
 			this.account.setPhase(new FinishedPhase(this.app, this.account, false));
 			return;
 		}

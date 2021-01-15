@@ -30,7 +30,7 @@ public class GuessPhase extends Phase {
 	private String currentCode = "666666";
 
 	public GuessPhase(App app, Account account) {
-		super("generate-2fa", app, account);
+		super("generating two-factor security codes", app, account);
 	}
 
 	@Override
