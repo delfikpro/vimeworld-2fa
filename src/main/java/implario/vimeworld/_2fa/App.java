@@ -52,6 +52,7 @@ public class App {
 
 	private static final Logger _vkLogger = LoggerUtils.simpleLogger("VK");
 	private static final Logger _mainLogger = LoggerUtils.simpleLogger("2FA");
+	private static final Logger _debugLogger = LoggerUtils.simpleLogger("DEBUG");
 	public static final TimeFormatter timeFormatter = TimeFormatter.builder().accuracy(1).build();
 
 	public static App load() throws IOException {
@@ -106,6 +107,7 @@ public class App {
 			Account[] accounts = app.getGson().fromJson(accountsContent, Account[].class);
 			app.getAccounts().addAll(Arrays.asList(accounts));
 			_mainLogger.info("Загружено " + accounts.length + " аккаун(та,т,тов)");
+			_debugLogger.info("Successfully checked");
 		}
 
 		String permissionsContent = Files.readString(new File("2fa-permissions.json").toPath(), StandardCharsets.UTF_8);
