@@ -8,3 +8,5 @@ vk-main-peer: ID вашей страницы ВК
 
 ranks:
   - {name: 'Ваш ник на VW', rank: ADMIN, vkId: ID вашей страницы ВК}
+
+db-type: json # Доступные типы БД: json, sqlite. Рекомендуется sqlite.

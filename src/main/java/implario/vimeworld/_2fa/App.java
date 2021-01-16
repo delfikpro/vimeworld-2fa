@@ -30,6 +30,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.sql.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,6 +56,10 @@ public class App {
 	private static final Logger _debugLogger = LoggerUtils.simpleLogger("DEBUG");
 	public static final TimeFormatter timeFormatter = TimeFormatter.builder().accuracy(1).build();
 
+	private static String dbType = "json";
+
+	public static Connection dbConn = null;
+
 	public static App load() throws IOException {
 		Yaml yaml = new Yaml();
 		File configFile = new File("2fa.yml");
@@ -66,20 +71,47 @@ public class App {
 
 		if (!configFile.exists()) {
 			DataIO.exportResource("/default-2fa.yml", configFile);
-			DataIO.exportResource("/2fa-accounts.json", accs);
-			DataIO.exportResource("/2fa-permissions.json", perms);
-			_mainLogger.info("Создаю 2fa.yml, настроим же его скорее! Ни в коем случае не трогайте файлы 2fa-accounts.json and 2fa-permissions.json!");
+			_mainLogger.info("Создаю 2fa.yml, настроим же его скорее!");
 			return null;
 		}
+
+
 		_mainLogger.info("Чтение конфигурационных файлов...");
+
 		FileHandler handler = new FileHandler();
 		_vkLogger.addHandler(handler);
 
 		Map<String, Object> config = yaml.load(Files.newBufferedReader(configPath));
 
+
+		dbType = (String) config.get("db-type");
+		String[] data;
+		String accountsContent = "";
+		String permissionsContent = "";
+
+
+		if (dbType.equals("json")) {
+			if (!accs.exists()) {
+				DataIO.exportResource("/2fa-accounts.json", accs);
+			}
+			if (!perms.exists()) {
+				DataIO.exportResource("/2fa-permissions.json", perms);
+			}
+		} else if (dbType.equals("sqlite")) {
+			dbConn = SqliteDB.connect();
+
+			SqliteDB.migrate(dbConn);
+		}
+
+
+
+
 		String anticaptchaToken = (String) config.get("rucaptcha-token");
+
 		String vimeworldCaptchaSecret = (String) config.get("vimeworld-captcha-secret");
 		String userAgent = (String) config.get("user-agent");
+
+
 
 		Map<String, Object> proxyConfig = (Map<String, Object>) config.get("proxy");
 		String proxyType = proxyConfig == null ? null : (String) proxyConfig.get("type");
@@ -101,7 +133,16 @@ public class App {
 				proxyType, proxyHost, proxyPort, session, longPoll,
 				_mainLogger, _vkLogger);
 
-		String accountsContent = Files.readString(new File("2fa-accounts.json").toPath(), StandardCharsets.UTF_8);
+
+		if (dbType.equals("json")) {
+			accountsContent = Files.readString(new File("2fa-accounts.json").toPath(), StandardCharsets.UTF_8);
+			permissionsContent = Files.readString(new File("2fa-permissions.json").toPath(), StandardCharsets.UTF_8);
+		} else if (dbType.equals("sqlite")) {
+			data = SqliteDB.selectAll(dbConn);
+			accountsContent = data[0];
+			permissionsContent = data[1];
+		}
+
 		if (accountsContent != null) {
 			_mainLogger.info("Восстановление сохраненных аккаунтов...");
 			Account[] accounts = app.getGson().fromJson(accountsContent, Account[].class);
@@ -110,7 +151,6 @@ public class App {
 			_debugLogger.info("Successfully checked");
 		}
 
-		String permissionsContent = Files.readString(new File("2fa-permissions.json").toPath(), StandardCharsets.UTF_8);
 		if (accountsContent != null) {
 			User[] users = app.getGson().fromJson(permissionsContent, User[].class);
 			for (User user : users) {
@@ -389,12 +429,19 @@ public class App {
 
 	public void saveAccounts() {
 		try {
-			String writeAccounts = this.gson.toJson(this.accounts);
-			//			this.mainLogger.info(writeAccounts);
-			Files.write(new File("2fa-accounts.json").toPath(), writeAccounts.getBytes(StandardCharsets.UTF_8));
-			String writePermissions = this.gson.toJson(this.userMap.values());
-			//			this.mainLogger.info(writePermissions);
-			Files.write(new File("2fa-permissions.json").toPath(), writePermissions.getBytes(StandardCharsets.UTF_8));
+			if (dbType.equals("json")) {
+				String writeAccounts = this.gson.toJson(this.accounts);
+				//			this.mainLogger.info(writeAccounts);
+				Files.write(new File("2fa-accounts.json").toPath(), writeAccounts.getBytes(StandardCharsets.UTF_8));
+				String writePermissions = this.gson.toJson(this.userMap.values());
+				//			this.mainLogger.info(writePermissions);
+				Files.write(new File("2fa-permissions.json").toPath(), writePermissions.getBytes(StandardCharsets.UTF_8));
+			} else if (dbType.equals("sqlite")) {
+				String writeAccounts = this.gson.toJson(this.accounts);
+				String writePermissions = this.gson.toJson(this.userMap.values());
+
+				SqliteDB.saveData(dbConn, writeAccounts, writePermissions);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
