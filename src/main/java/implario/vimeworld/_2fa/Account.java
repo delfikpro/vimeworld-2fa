@@ -21,7 +21,7 @@ public class Account {
 	public void setPhase(Phase phase) {
 		Phase previous = this.phase;
 		this.phase = phase;
-		App.getInstance().getMainLogger().info("Account " + this + " entered " + phase.getName() + " phase");
+		App.getInstance().getMainLogger().info("Аккаунт " + this + " вошёл в следующую фазу: " + phase.getName());
 		if (previous != null && previous != phase) {
 			GroupSession session = App.getInstance().getVkSession();
 			if (session != null) session.sendMessage(new OutcomingMessage(

@@ -70,16 +70,18 @@ public class App {
 
 		if (!configFile.exists()) {
 			DataIO.exportResource("/default-2fa.yml", configFile);
-			_mainLogger.info("Created 2fa.yml, go and configure it!");
+			_mainLogger.info("Создаю 2fa.yml, настроим же его скорее!");
 			return null;
 		}
 
 
-		_mainLogger.info("Reading config...");
+		_mainLogger.info("Чтение конфигурационных файлов...");
+
 		FileHandler handler = new FileHandler();
 		_vkLogger.addHandler(handler);
 
 		Map<String, Object> config = yaml.load(Files.newBufferedReader(configPath));
+
 
 		dbType = (String) config.get("db-type");
 		String[] data;
@@ -103,7 +105,8 @@ public class App {
 
 
 
-		String anticaptchaToken = (String) config.get("anticaptcha-token");
+		String anticaptchaToken = (String) config.get("rucaptcha-token");
+
 		String vimeworldCaptchaSecret = (String) config.get("vimeworld-captcha-secret");
 		String userAgent = (String) config.get("user-agent");
 
@@ -140,10 +143,10 @@ public class App {
 		}
 
 		if (accountsContent != null) {
-			_mainLogger.info("Restoring saved accounts...");
+			_mainLogger.info("Восстановление сохраненных аккаунтов...");
 			Account[] accounts = app.getGson().fromJson(accountsContent, Account[].class);
 			app.getAccounts().addAll(Arrays.asList(accounts));
-			_mainLogger.info("Loaded " + accounts.length + " account" + (accounts.length == 1 ? "" : "s") + ".");
+			_mainLogger.info("Загружено " + accounts.length + " аккаунтов(та,т)" + (accounts.length == 1 ? "" : "s") + ".");
 		}
 
 		if (accountsContent != null) {
@@ -152,7 +155,7 @@ public class App {
 				app.getUserMap().put(user.getVkId(), user);
 
 			}
-			_vkLogger.info("Loaded " + app.getUserMap().size() + " vk user" + (users.length == 1 ? "" : "s") + ".");
+			_vkLogger.info("Загружено " + app.getUserMap().size() + " VK пользователей(ля, лей)" + (users.length == 1 ? "" : "s") + ".");
 		}
 		app.saveAccounts();
 
@@ -165,7 +168,7 @@ public class App {
 	private final ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
 	private final VkClient vkClient = new VkClient(httpClient);
 	private final int vkMainPeer;
-	private final String antiCaptchaToken;
+	private final String ruCaptchaToken;
 	private final String vimeworldCaptchaSecret;
 	private final String userAgent;
 	private final String proxyType;
@@ -225,7 +228,7 @@ public class App {
 
 	}
 
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm, dd MMM yyyy");
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy (HH:mm)");
 
 	private void handleVkMessage(NewMessageEvent event) {
 		try {

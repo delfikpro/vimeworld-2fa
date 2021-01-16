@@ -19,7 +19,7 @@ public class CsrfPhase extends Phase {
 	private final String code;
 
 	public CsrfPhase(App app, Account account, String code) {
-		super("acquire-csrf", app, account);
+		super("confirmation with csrf-token", app, account);
 		this.code = code;
 	}
 

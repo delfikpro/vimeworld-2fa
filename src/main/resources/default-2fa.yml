@@ -1,4 +1,4 @@
-anticaptcha-token: 'Токен работника на https://rucaptcha.com/'
+rucaptcha-token: 'Токен работника на https://rucaptcha.com/'
 vimeworld-captcha-secret: 6LeriWUUAAAAAJMt8OpbkWrWxVePsE_TRUVEX2sp # Не изменяйте данный параметр.
 user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36 # Не изменяйте данный параметр.
 

@@ -21,7 +21,7 @@ public class WaitingPhase extends Phase {
 	public WaitingPhase(App app, Account account) {
 		super("waiting", app, account);
 
-		methodUri = UrlBuilder.fromString("https://rucaptcha.com/in.php?key=" + app.getAntiCaptchaToken() + "&method=userrecaptcha&json=1&userAgent=" + app.getUserAgent() + "&googlekey=" + app.getVimeworldCaptchaSecret() + "&pageurl=https://cp.vimeworld.ru/login").toUri();
+		methodUri = UrlBuilder.fromString("https://rucaptcha.com/in.php?key=" + app.getRuCaptchaToken() + "&method=userrecaptcha&json=1&userAgent=" + app.getUserAgent() + "&googlekey=" + app.getVimeworldCaptchaSecret() + "&pageurl=https://cp.vimeworld.ru/login").toUri();
 	}
 
 	@Override
@@ -32,7 +32,7 @@ public class WaitingPhase extends Phase {
 		JsonObject object = app.getGson().fromJson(response.body(), JsonObject.class);
 		System.out.println(response.body());
 		if (object.get("status").getAsInt() == 0) {
-			app.getVkSession().sendMessage(new OutcomingMessage("Хаха я словил ошибку " + object.get("request").getAsString() + " от Rucaptcha"), app.getVkMainPeer());
+			app.getVkSession().sendMessage(new OutcomingMessage("Возникла ошибка " + object.get("request").getAsString() + " от сервиса Rucaptcha"), app.getVkMainPeer());
 			FinishedPhase phase = new FinishedPhase(this.app, this.account, false);
 			account.setPhase(phase);
 			phase.tick();

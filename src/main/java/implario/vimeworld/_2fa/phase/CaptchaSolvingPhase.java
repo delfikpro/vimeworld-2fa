@@ -21,7 +21,7 @@ public class CaptchaSolvingPhase extends Phase {
 	public CaptchaSolvingPhase(App app, Account account, String antiCaptchaTaskId) {
 		super("captcha-bypass", app, account);
 
-		this.methodUri = UrlBuilder.fromString("https://rucaptcha.com/res.php?key=" + app.getAntiCaptchaToken() + "&json=1&id=" + antiCaptchaTaskId + "&action=get").toUri();
+		this.methodUri = UrlBuilder.fromString("https://rucaptcha.com/res.php?key=" + app.getRuCaptchaToken() + "&json=1&id=" + antiCaptchaTaskId + "&action=get").toUri();
 	}
 
 	@Override
@@ -35,7 +35,7 @@ public class CaptchaSolvingPhase extends Phase {
 
 		if (taskInfo.get("request").getAsString().equals("CAPCHA_NOT_READY")) return;
 		if (taskInfo.get("status").getAsInt() == 0 && !taskInfo.get("request").getAsString().equals("CAPCHA_NOT_READY")) {
-			app.getVkSession().sendMessage(new OutcomingMessage("Хаха я словил ошибку " + taskInfo.get("request").getAsString() + " от Rucaptcha"), app.getVkMainPeer());
+			app.getVkSession().sendMessage(new OutcomingMessage("Возникла ошибка " + taskInfo.get("request").getAsString() + " от сервиса Rucaptcha"), app.getVkMainPeer());
 			FinishedPhase phase = new FinishedPhase(this.app, this.account, false);
 			account.setPhase(phase);
 			phase.tick();
