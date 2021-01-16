@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 group 'implario'
-version '5.0'
+version '5.5'
 
 sourceCompatibility = targetCompatibility = 11
 
@@ -16,6 +16,10 @@ repositories {
 dependencies {
     testImplementation 'junit:junit:4.12'
     implementation 'org.yaml:snakeyaml:1.26'
+
+    compile files('libs/ojdbc10-full')
+
+    compile group:'org.xerial', name:'sqlite-jdbc', version:'3.8.11.2'
 
     compileOnly 'org.projectlombok:lombok:1.18.12'
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
