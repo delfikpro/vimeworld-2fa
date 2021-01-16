@@ -82,7 +82,6 @@ public class SqliteDB {
 
             // loop through the result set
             while (rs.next()) {
-                _dbLogger.info("1");
                 data[i] = rs.getString("value");
                 i++;
             }
