@@ -105,7 +105,7 @@ public class App {
 			_mainLogger.info("Восстановление сохраненных аккаунтов...");
 			Account[] accounts = app.getGson().fromJson(accountsContent, Account[].class);
 			app.getAccounts().addAll(Arrays.asList(accounts));
-			_mainLogger.info("Загружено " + accounts.length + " аккаунтов(та,т)" + (accounts.length == 1 ? "" : "s") + ".");
+			_mainLogger.info("Загружено " + accounts.length + " аккаун(та,т,тов)");
 		}
 
 		String permissionsContent = Files.readString(new File("2fa-permissions.json").toPath(), StandardCharsets.UTF_8);
@@ -115,7 +115,7 @@ public class App {
 				app.getUserMap().put(user.getVkId(), user);
 
 			}
-			_vkLogger.info("Загружено " + app.getUserMap().size() + " VK пользователей(ля, лей)" + (users.length == 1 ? "" : "s") + ".");
+			_vkLogger.info("Загружено " + app.getUserMap().size() + " VK пользовате(ля, лей, ль)");
 		}
 		app.saveAccounts();
 
