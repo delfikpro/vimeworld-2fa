@@ -47,7 +47,7 @@ public class GuessPhase extends Phase {
 			this.app.saveAccounts();
 		} else {
 			this.account.setTriedCodes(this.account.getTriedCodes() + 1);
-			this.nextTickAfter(60_000);
+			this.nextTickAfter(90_000);
 		}
 
 		this.currentCode = VimeWorld2FA.pad2faCode(ThreadLocalRandom.current().nextInt(1_000_000));
